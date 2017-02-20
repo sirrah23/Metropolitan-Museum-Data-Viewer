@@ -6,6 +6,7 @@ var MongoClient = require('mongodb').MongoClient
 
 // Connection URL
 var url = 'mongodb://localhost:27017/ArtDB';
+
 // Use connect method to connect to the Server
 MongoClient.connect(url, function(err, db) {
   db.createCollection("art");

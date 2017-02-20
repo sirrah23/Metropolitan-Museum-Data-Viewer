@@ -1,34 +1,43 @@
-var fs = require("fs");
-var readline = require('readline');
-var express = require('express');
-var app = express();
+var fs = require("fs")
+,express = require('express')
+,MongoClient = require('mongodb').MongoClient
+,app = express();
 
+// Connection URL
+var url = 'mongodb://localhost:27017/ArtDB';
 
-var readableStream = fs.createReadStream("/home/harris/Downloads/MetObjects.csv");
-var rl = readline.createInterface({"input" : readableStream});
-var artwork = {};
-
-rl.on('line', function(line){
-  var csv_data = line.split(",");
-  if (csv_data[22] !== undefined){
-    var re = /\d{4}/;
-    var year_match = csv_data[22].match(re);
-    if(year_match !== null && year_match[0]){
-      if (year_match[0] in artwork){
-        artwork[year_match[0]] += csv_data[6];
-      } else {
-        artwork[year_match[0]] = [csv_data[6]];
-      }
-      console.log(artwork);
-    }
-  }
-});
+/* Get all art from the database for a specific
+ * year as requested by the client.
+ */
 
 app.get('/art/:year', function (req, res) {
   var year_requested = req.params['year'];
+  get_art_by_year(year_requested, (err, data) => {
+    if (err != null){
+      console.log(err);
+      res.json({"err": 1, "data": []});
+    } else {
+      res.json({"err" : 0, "data" : data});
+    }
+    return;
+  });
 });
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!');
 });
 
+/* Get all art from a specified year and pass
+ * it to a callback. Does the actual mongo query.
+ */
+function get_art_by_year(year, cb){
+  MongoClient.connect(url, function(err, db) {
+    if(err !== null){
+      cb(err);
+    }
+    db.collection("art").find({year}).toArray((err, res) => {
+      console.log(res);
+      cb(null, res);
+    });
+  });
+}
