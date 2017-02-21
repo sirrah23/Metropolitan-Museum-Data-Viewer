@@ -6,10 +6,12 @@ var fs = require("fs")
 // Connection URL
 var url = 'mongodb://localhost:27017/ArtDB';
 
+// Serve static files in public folder
+app.use(express.static('public'));
+
 /* Get all art from the database for a specific
  * year as requested by the client.
  */
-
 app.get('/art/:year', function (req, res) {
   var year_requested = req.params['year'];
   get_art_by_year(year_requested, (err, data) => {
