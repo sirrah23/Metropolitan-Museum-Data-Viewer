@@ -36,10 +36,11 @@ loader.prototype.read_line = function(line){
   const csv_data = this.csv_split_line(line);
   const art_title = csv_data[6];
   const art_year = csv_data[22];
+  const art_link = csv_data[40];  
   if (art_year !== undefined){
     const year_match = this.getYear(art_year);
     if(year_match !== -1){
-      this.db.collection('art').insertOne({title: art_title, year: year_match}, function(err, r){
+      this.db.collection('art').insertOne({title: art_title, year: year_match, link: art_link}, function(err, r){
       });
     }
   }

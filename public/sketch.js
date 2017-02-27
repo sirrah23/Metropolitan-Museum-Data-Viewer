@@ -1,6 +1,6 @@
 var year_div, year_slider, prev_year, year_disp;
-var display_limit = 15; // number of art works to display pick
-
+var display_limit = 25; // number of art works to display pick
+var art_text = []; 
 
 function setup(){
   createCanvas(window.innerWidth, 600);
@@ -24,10 +24,24 @@ function draw(){
       background(51);
       var art_works = data.data;
       var bound = Math.min(display_limit, art_works.length);
+      art_text = [];
       for(var i = 0; i < bound ; i++){ //TODO: Randomize
         var pos = createVector(random(0, width), random(0,height));
-        text(art_works[i].title, pos.x, pos.y);
+        var curr_text = new TextBlob(pos.x, pos.y, art_works[i].title, art_works[i].link);
+        art_text.push(curr_text);
+        curr_text.show();
       }
     });
+  }
+}
+
+function mousePressed(){
+  var d;
+  for(var i =0; i < art_text.length; i++){
+    d = dist(art_text[i].x, art_text[i].y, mouseX, mouseY)
+    if(d < 50){
+      window.open(art_text[i].link, "_blank");
+      return;
+    }
   }
 }
