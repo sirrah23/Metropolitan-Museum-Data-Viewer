@@ -1,10 +1,12 @@
-var fs = require("fs")
+'use strict';
+
+const fs = require("fs")
 ,express = require('express')
 ,MongoClient = require('mongodb').MongoClient
 ,app = express();
 
 // Connection URL
-var url = 'mongodb://localhost:27017/ArtDB';
+const url = 'mongodb://localhost:27017/ArtDB';
 
 // Serve static files in public folder
 app.use(express.static('public'));
@@ -13,7 +15,7 @@ app.use(express.static('public'));
  * year as requested by the client.
  */
 app.get('/art/:year', function (req, res) {
-  var year_requested = req.params['year'];
+  const year_requested = parseInt(req.params['year']);
   get_art_by_year(year_requested, (err, data) => {
     if (err != null){
       console.log(err);

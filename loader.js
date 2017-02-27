@@ -2,44 +2,44 @@
 
 const fs = require('fs')
 ,readline = require('readline')
-,assert = require('assert');
+,assert = require('assert')
+,CSVReader = require('./csv_reader.js')
+,CSVWriter = require('./csv_writer.js');
 
 function loader(db, input_file){
   this.db = db;
   this.input_file = input_file;
 };
 
-//TODO: Fix this
 loader.prototype.csv_split_line = function(line){
-  var quoted = false;
-  var curr = "";
-  var cols = [];
+  let quoted = false;
+  let curr = "";
+  let cols = [];
   for(var i = 0; i < line.length; i++){
     var c = line.charAt(i);
-    if ( c === '"' && !quoted){
-      quoted = true;
-    } else if ( c === '"' && quoted){
-      quoted = false;
-      cols.push(curr);
-      curr = "";
-    } else if (c === "," && !quoted) {
+    if ( c === '\"'){
+      quoted = !quoted;
+    } else if ((c === "," || c === "\n") && !quoted) {
       cols.push(curr);
       curr = "";
     } else {
       curr += c;
     }
   }
+  if(curr.length > 0){
+    cols.push(curr);
+  }
   return cols;
 };
 
 loader.prototype.read_line = function(line){
-  var csv_data = this.csv_split_line(line);
-  var art_title = csv_data[6];
-  var art_year = csv_data[22];
+  const csv_data = this.csv_split_line(line);
+  const art_title = csv_data[6];
+  const art_year = csv_data[22];
   if (art_year !== undefined){
-    var year_match = this.getYear(art_year);
+    const year_match = this.getYear(art_year);
     if(year_match !== -1){
-      this.db.collection('art').insertOne({title: art_title, year: year_match[1]}, function(err, r){
+      this.db.collection('art').insertOne({title: art_title, year: year_match}, function(err, r){
       });
     }
   }
@@ -64,25 +64,21 @@ loader.prototype.getYear = function(date_str){
   return -1;
 };
 
-//TODO: Deal with century time format e.g. "Early 15th-century..."
-//TODO: Deal with specific times "02/13/2017 at 8:00:13 AM"
 loader.prototype.load_data = function(){
-  var readableStream = this.genReadStream();
-  //TODO: Create my own stream here (ignore quoted \n)
-  var rl = readline.createInterface({"input" : readableStream});
-
-  var line_cb = function(line){
-    return this.read_line(line);
-  }.bind(this);
-
-  var done_cb = function(){
+  const readableStream = this.genReadStream();
+  const csvReader = new CSVReader();
+  const csvWriter = new CSVWriter(this.read_line.bind(this));
+  const done_cb = function(){
     console.log("Done!");
     this.db.close();
   }.bind(this);
-
-  rl.on('line', line_cb);
-  rl.on('close', done_cb);
+  readableStream.pipe(csvReader).pipe(csvWriter);
+  csvReader.on('end', function(){
+    csvWriter.end();
+  });
+  csvWriter.on('finish', function(){
+    done_cb();
+  });
 };
 
 module.exports = loader;
-

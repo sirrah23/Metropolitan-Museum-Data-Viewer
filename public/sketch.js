@@ -3,7 +3,7 @@ var display_limit = 15; // number of art works to display pick
 
 
 function setup(){
-  createCanvas(800, 600);
+  createCanvas(window.innerWidth, 600);
   createElement("br");
   background(51);
   year_div = createElement("div");

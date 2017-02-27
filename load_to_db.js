@@ -15,7 +15,7 @@ const file_name = process.argv[2];
 MongoClient.connect(url, function(err, db) {
   db.createCollection("art");
   assert.equal(null, err);
-  var loader = new Loader(db, file_name);
+  const loader = new Loader(db, file_name);
   loader.load_data();
 });
 
