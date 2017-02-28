@@ -22,7 +22,7 @@ function draw(){
     year_div.child(year_disp);
     httpGet("/art/"+year_slider.value(), null, "json", function(data){
       background(51);
-      var art_works = data.data;
+      var art_works = shuffle(data.data);
       var bound = Math.min(display_limit, art_works.length);
       art_text = [];
       for(var i = 0; i < bound ; i++){ //TODO: Randomize
